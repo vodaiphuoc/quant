@@ -100,3 +100,6 @@ def run_quant():
         )
     except Exception as e:
         logger.error("error in oneshot: {}".format(e))
+
+if __name__ == "__main__":
+    run_quant()
