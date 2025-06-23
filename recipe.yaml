@@ -2,7 +2,7 @@ quant_stage:
   quant_modifiers:
     GPTQModifier:
       dampening_frac: 0.05
-      ignore: ['re:.*lm_head.*', 're:.*embed_tokens.*', 're:model.vision_tower.*', 're:model.multi_modal_projector.*']
+      ignore: ['re:.*lm_head.*', 're:.*embed_tokens.*', 're:vision_tower.*', 're:multi_modal_projector.*']
       sequential_update: true
       offload_hessians: true
       config_groups:
