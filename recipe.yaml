@@ -1,0 +1,13 @@
+quant_stage:
+  quant_modifiers:
+    GPTQModifier:
+      dampening_frac: 0.05
+      ignore: ['re:.*lm_head.*', 're:.*embed_tokens.*', 're:model.vision_tower.*', 're:model.multi_modal_projector.*']
+      sequential_update: true
+      offload_hessians: true
+      config_groups:
+        group_0:
+          targets: [Linear]
+          weights: {num_bits: 8, type: int, symmetric: true, strategy: channel, observer: mse}
+          input_activations: {num_bits: 8, type: int, symmetric: true, strategy: token, dynamic: true,
+            observer: memoryless}
