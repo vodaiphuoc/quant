@@ -1,20 +1,32 @@
+import requests
+import torch
+import os
+from PIL import Image
+from loguru import logger
+from transformers import AutoProcessor, Gemma3ForConditionalGeneration
+from datasets import load_dataset
+from llmcompressor import oneshot
+import argparse
 
-def run_quant():
-    import requests
-    import torch
-    import os
-    from PIL import Image
-    from loguru import logger
-    from transformers import AutoProcessor, Gemma3ForConditionalGeneration, AutoModelForCausalLM
-    from datasets import load_dataset
-    from llmcompressor import oneshot
-    from llmcompressor.modifiers.smoothquant import SmoothQuantModifier
-    from llmcompressor.modifiers.quantization import GPTQModifier, QuantizationModifier
-    from compressed_tensors.quantization import (
-        QuantizationArgs
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--quant_cache', 
+        default= False, 
+        action=argparse.BooleanOptionalAction
     )
-    from llmcompressor.transformers.compression.helpers import calculate_offload_device_map, custom_offload_device_map
+    args = parser.parse_args()
 
+    if args.quant_cache:
+        recipe_file_name = "recipe_cache.yaml"
+    else:
+        recipe_file_name = "recipe_standard.yaml"
+
+    recipe_file_path = os.path.join(
+        os.path.dirname(__file__), 
+        "recipes",
+        recipe_file_name
+    )
 
     # Load model.
     model_id = "google/gemma-3-4b-it"
@@ -84,22 +96,19 @@ def run_quant():
     ds = ds.map(preprocess_and_tokenize, remove_columns=ds.column_names)
 
     try:
-
         # Perform oneshot
         oneshot(
-            model=model,
-            tokenizer=model_id,
+            model = model,
+            tokenizer = model_id,
             dataset=ds,
-            # splits={"calibration": "test[:16]"},
-            recipe= os.path.join(os.path.dirname(__file__), "recipe.yaml"),
+            recipe = recipe_file_path,
             max_seq_length=MAX_SEQUENCE_LENGTH,
             num_calibration_samples=NUM_CALIBRATION_SAMPLES,
             trust_remote_code_model=True,
-            data_collator=data_collator,
-            output_dir=model_id+"_FP8DYNAMIC"
+            data_collator = data_collator,
+            output_dir = model_id.split('/')[-1]+f"w8a8_{recipe_file_name.replce('.yaml','')}"
         )
     except Exception as e:
         logger.error("error in oneshot: {}".format(e))
 
-if __name__ == "__main__":
-    run_quant()
+
