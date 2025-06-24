@@ -106,7 +106,7 @@ if __name__ == "__main__":
             num_calibration_samples=NUM_CALIBRATION_SAMPLES,
             trust_remote_code_model=True,
             data_collator = data_collator,
-            output_dir = model_id.split('/')[-1]+f"w8a8_{recipe_file_name.replce('.yaml','')}"
+            output_dir = model_id.split('/')[-1]+f"w8a8_{recipe_file_name.replace('.yaml','')}"
         )
     except Exception as e:
         logger.error("error in oneshot: {}".format(e))
